@@ -3,11 +3,25 @@ from markdown_to_html import markdown_to_html
 
 def read_markdown_file(file_path):
     try:
-        with open(file_path, 'r', encoding='utf-8') as file:
+        with open(file_path, 'r', encoding='utf-8-sig') as file:
             return file.read()
     except FileNotFoundError:
         print("Error: File not found.", file=sys.stderr)
         sys.exit(1)
+    except UnicodeDecodeError:
+        try:
+            with open(file_path, 'r', encoding='utf-16') as file:
+                return file.read()
+        except UnicodeDecodeError:
+            print("Error: Unable to decode the file. Please make sure it is in UTF-16 encoding.", file=sys.stderr)
+            sys.exit(1)
+        except Exception as e:
+            print("Error:", e, file=sys.stderr)
+            sys.exit(1)
+    except Exception as e:
+        print("Error:", e, file=sys.stderr)
+        sys.exit(1)
+
 
 def main():
     if len(sys.argv) < 2:
