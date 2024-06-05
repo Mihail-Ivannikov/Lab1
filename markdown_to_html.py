@@ -1,36 +1,38 @@
-# markdown_to_html.py
-def convert_markdown_to_html(markdown_text):
-    html_text = ""
-    lines = markdown_text.split('\n')
-    in_preformatted = False
-    
-    for line in lines:
-        if line.strip() == "```":
-            if in_preformatted:
-                html_text += "</pre>\n"
-                in_preformatted = False
-            else:
-                html_text += "<pre>\n"
-                in_preformatted = True
-            continue
-        
-        if in_preformatted:
-            html_text += line + '\n'
-            continue
+import re
+import sys
 
-        line = line.replace('**', '<b>', 1).replace('**', '</b>', 1)
-        line = line.replace('_', '<i>', 1).replace('_', '</i>', 1)
-        line = line.replace('`', '<tt>', 1).replace('`', '</tt>', 1)
-        
-        if line.strip():
-            if not html_text.endswith('</p>\n') and not html_text.endswith('<pre>\n'):
-                html_text += "<p>"
-            html_text += line + ' '
-        else:
-            if html_text.endswith(' '):
-                html_text = html_text.rstrip() + "</p>\n"
+def validate_markdown(markdown_text):
+    if re.search(r'\*\*.*`.*_.*`.*\*\*', markdown_text) or \
+       re.search(r'`.*\*\*.*_.*\*\*.*`', markdown_text) or \
+       re.search(r'_.*\*\*.*`.*\*\*.*_', markdown_text):
+        return False
 
-    if html_text.endswith(' '):
-        html_text = html_text.rstrip() + "</p>\n"
-    
-    return html_text.strip()
+    if markdown_text.count('**') % 2 != 0 or \
+       markdown_text.count('_') % 2 != 0 or \
+       markdown_text.count('`') % 2 != 0 or \
+       markdown_text.count('```') % 2 != 0:
+        return False
+
+    return True
+
+def markdown_to_html(markdown_text):
+    if not validate_markdown(markdown_text):
+        print("Error: invalid markdown", file=sys.stderr)
+        sys.exit(1)
+
+    preformatted_blocks = re.findall(r'```(.*?)```', markdown_text, re.DOTALL)
+    for block in preformatted_blocks:
+        html_block = f'<pre>{block}</pre>'
+        markdown_text = markdown_text.replace(f'```{block}```', html_block)
+
+    markdown_text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', markdown_text)
+
+    markdown_text = re.sub(r'_(.*?)_', r'<i>\1</i>', markdown_text)
+
+    markdown_text = re.sub(r'`(.*?)`', r'<tt>\1</tt>', markdown_text)
+
+    paragraphs = markdown_text.split('\n\n')
+    html_paragraphs = ['<p>{}</p>'.format(p.replace('\n', ' ')) for p in paragraphs]
+    html_text = ''.join(html_paragraphs)
+
+    return html_text

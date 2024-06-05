@@ -1,43 +1,37 @@
-# main.py
 import sys
-from markdown_to_html import convert_markdown_to_html
+from markdown_to_html import markdown_to_html
+
+def read_markdown_file(file_path):
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            return file.read()
+    except FileNotFoundError:
+        print("Error: File not found.", file=sys.stderr)
+        sys.exit(1)
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python main.py /path/to/markdown [--out /path/to/output.html]", file=sys.stderr)
+        print("Usage: python main.py <input_markdown_file> [--out <output_html_file>]", file=sys.stderr)
         sys.exit(1)
 
-    input_file_path = sys.argv[1]
-    output_file_path = None
+    input_file = sys.argv[1]
+    markdown_content = read_markdown_file(input_file)
+    html_content = markdown_to_html(markdown_content)
+
     if len(sys.argv) > 2 and sys.argv[2] == '--out':
-        if len(sys.argv) > 3:
-            output_file_path = sys.argv[3]
-        else:
-            print("Error: --out specified but no output file given", file=sys.stderr)
+        if len(sys.argv) < 4:
+            print("Error: Please specify the output file path.", file=sys.stderr)
             sys.exit(1)
-
-    try:
-        with open(input_file_path, 'r', encoding='utf-8') as file:
-            markdown_text = file.read()
-    except Exception as e:
-        print(f"Error: cannot read file {input_file_path}. Details: {e}", file=sys.stderr)
-        sys.exit(1)
-
-    try:
-        html_text = convert_markdown_to_html(markdown_text)
-    except Exception as e:
-        print(f"Error: invalid markdown. Details: {e}", file=sys.stderr)
-        sys.exit(1)
-
-    if output_file_path:
+        output_file = sys.argv[3]
         try:
-            with open(output_file_path, 'w', encoding='utf-8') as file:
-                file.write(html_text)
+            with open(output_file, 'w', encoding='utf-8') as file:
+                file.write(html_content)
+            print("HTML output written to", output_file)
         except Exception as e:
-            print(f"Error: cannot write to file {output_file_path}. Details: {e}", file=sys.stderr)
+            print("Error:", e, file=sys.stderr)
             sys.exit(1)
     else:
-        print(html_text)
+        print(html_content)
 
 if __name__ == "__main__":
     main()
