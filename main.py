@@ -17,7 +17,7 @@ def main():
             sys.exit(1)
 
     try:
-        with open(input_file_path, 'r') as file:
+        with open(input_file_path, 'r', encoding='utf-8') as file:
             markdown_text = file.read()
     except Exception as e:
         print(f"Error: cannot read file {input_file_path}. Details: {e}", file=sys.stderr)
@@ -31,7 +31,7 @@ def main():
 
     if output_file_path:
         try:
-            with open(output_file_path, 'w') as file:
+            with open(output_file_path, 'w', encoding='utf-8') as file:
                 file.write(html_text)
         except Exception as e:
             print(f"Error: cannot write to file {output_file_path}. Details: {e}", file=sys.stderr)
