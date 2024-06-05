@@ -1,44 +1,10 @@
+# main.py
 import sys
-
-def convert_markdown_to_html(markdown_text):
-    html_text = ""
-    lines = markdown_text.split('\n')
-    in_preformatted = False
-    
-    for line in lines:
-        if line.strip() == "```":
-            if in_preformatted:
-                html_text += "</pre>\n"
-                in_preformatted = False
-            else:
-                html_text += "<pre>\n"
-                in_preformatted = True
-            continue
-        
-        if in_preformatted:
-            html_text += line + '\n'
-            continue
-
-        line = line.replace('**', '<b>', 1).replace('**', '</b>', 1)
-        line = line.replace('_', '<i>', 1).replace('_', '</i>', 1)
-        line = line.replace('`', '<tt>', 1).replace('`', '</tt>', 1)
-        
-        if line.strip():
-            if not html_text.endswith('</p>\n') and not html_text.endswith('<pre>\n'):
-                html_text += "<p>"
-            html_text += line + ' '
-        else:
-            if html_text.endswith(' '):
-                html_text = html_text.rstrip() + "</p>\n"
-
-    if html_text.endswith(' '):
-        html_text = html_text.rstrip() + "</p>\n"
-    
-    return html_text.strip()
+from markdown_to_html import convert_markdown_to_html
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python app.py /path/to/markdown [--out /path/to/output.html]", file=sys.stderr)
+        print("Usage: python main.py /path/to/markdown [--out /path/to/output.html]", file=sys.stderr)
         sys.exit(1)
 
     input_file_path = sys.argv[1]
